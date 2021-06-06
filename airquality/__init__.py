@@ -33,11 +33,16 @@ statistical_measurements = ['avg', 'max', 'min', 'sum', 'count']
     location='query')
 def measurements(args):
     query = f"""
-    SELECT station_id, {args['measurement']}({args['variable']})
-    FROM aasuero.test_airquality_measurements
-    WHERE timeinstant >= \'{args['from']}\'
-    AND timeinstant < '{args['to']}'
-    GROUP BY station_id
+    SELECT s.station_id, g.population,
+    {args['measurement']}(m.{args['variable']}) as {args['measurement']}_{args['variable']}
+    FROM aasuero.test_airquality_stations s
+    JOIN aasuero.test_airquality_measurements m
+    ON s.station_id=m.station_id
+    JOIN aasuero.esp_grid_1km_demographics g
+    ON ST_Contains(g.the_geom, s.the_geom)
+    WHERE m.timeinstant >= '{args['from']}'
+    AND m.timeinstant < '{args['to']}'
+    GROUP BY s.station_id, s.the_geom, g.population
     """
     response = requests.get(
         url=sql_api_url,

@@ -19,6 +19,7 @@ def test_many_responses(client):
     body = json.loads(response.data)
     assert response.status_code == 200
     assert 'rows' in body
+    assert 'population' in body['rows'][0]
 
 def test_future_date(client):
     """A request for date in the future should return no rows"""
