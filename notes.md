@@ -20,7 +20,7 @@ popup.setContent(content);
 
 **Solution:**
 
-* The query returns a table of countries. For each country, it provides the number of populated places it has, and the total population of the country. 
+* The query returns a table of countries. For each country, it provides the number of populated places it has, and the total population of the country.
 * If a country exists in the database, but none of the populated places are inside it, the country would not appear in the result.
 * A place is counted towards a country's number of places and total population if the geometric definition of the country and the place share any point. That means that in theory, it could be possible that a place (and its population) are counted for more than one country, given that their geometric definitions overlap.
 
@@ -53,13 +53,13 @@ Given the tables above, the query would return the following result:
 | Spain  | 2      | 2100       |
 | France | 1      | 3000       |
 
-**How I resolved it**
+**How I resolved it:**
 
 * I looked up `ST_Intersect` in the  PostGIS documentation, and found out that it returns TRUE, if "a geometry or geography shares any portion of space" ([see PostGIS documentation](https://postgis.net/docs/ST_Intersects.html)).
 
 ## airquality API
 
-* I decided to use python with flask since the microframework seemed a good fit for a quick project like this
+* I decided to use python with flask since the microframework seemed a good fit for a quick project like this.
 * I wrote some tests using pytest.
 
 **First query: Statistical measurements**
@@ -124,7 +124,7 @@ I simply added one more constraint to the query:
 AND m.station_id IN ('aq_jaen', 'aq_salvia', 'aq_nevero')
 ```
 
-This constraint is added only if the user provides the optional stations parameter.
+This constraint is added only if the user provides the optional parameter `stations`.
 
 To make sure that I do not make a SQL query with a `station_id` that does not actually exist, I validate the user input first. First, I get the list of 10 stations:
 
@@ -132,7 +132,7 @@ To make sure that I do not make a SQL query with a `station_id` that does not ac
 SELECT station_id FROM aasuero.test_airquality_stations
  ```
 
-Then, I make sure that the ones provided by the user in the parameters are in the list returned by the previous statement.
+Then, check that the ones provided by the user in the parameters are in the list returned by the previous statement.
 
 **Geom filter**
 
@@ -144,7 +144,9 @@ Then I combined that function with `ST_Intersect` for the following constraint:
 AND ST_Intersects(ST_GeomFromGeoJSON('...'), s.the_geom)
 ```
 
-`s` refers to `aasuero.test_airquality_stations` as defined in the query above.
+(`s` refers to `aasuero.test_airquality_stations` as defined in the query above.)
+
+This constraint is added only if the user provides the optional parameter `geom`.
 
 To catch any invalid GeoJSON objects early, I execute the following query as part of the GET parameter validation:
 
@@ -158,8 +160,8 @@ If this query returns an error, I show it to the user and do not even execute th
 
 The SQL queries I send to the CARTO API are constructed by inserting the values provided by the users into String templates. While this is not the approach I would usually choose, I did it for two reasons:
 
-* Since I am not accessing any database directly, I was lacking the usual libraries and allow more secure substitution of variables in SQL queries
-* I should only have read-only access to the CARTO API, therefore the damage that could be done by SQL injection is low
+* Since I am not accessing any database directly, I am lacking the usual libraries that allow more secure substitution of variables in SQL queries.
+* I only have read-only access to a public data set, therefore no damage can be done by SQL injection.
 
 **How I would implement authentication**
 

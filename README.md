@@ -3,11 +3,13 @@
 [![Build Status](https://travis-ci.com/macarro/airquality.svg?branch=main)](https://travis-ci.com/macarro/airquality)
 [![Coverage Status](https://coveralls.io/repos/github/macarro/airquality/badge.svg?branch=main)](https://coveralls.io/github/macarro/airquality?branch=main)
 
-This is an api on top of the CARTO SQL API, that returns aggregated measurements for air quality stations.
+This is an api on top of the CARTO SQL API that returns aggregated measurements for air quality stations.
+
+Note: For comments on the implementation, as well as my solutions to the warm up exercises, see [notes.md](notes.md).
 
 ## Installation
 
-(1) Clone the repository and open a console at the project root
+(1) Clone the repository and open a console at the project root directory.
 
 (2) Create a new virtual environment:
 
@@ -87,11 +89,11 @@ coverage run --source=./airquality -m pytest
 
 ## Deployment
 
-The application is deployed on heroku. If authenticated correctly in the heroku CLI, make a `git push heroku main`.
+The application is deployed on heroku. If authenticated correctly in the heroku CLI, make a git push like this: `git push heroku main`.
 
 ## API documentation
 
-The API only offers two GET endpoints: `/measurements` and `/timeseries`. 
+The API only offers two GET endpoints: `/measurements` and `/timeseries`.
 
 **(1) /measurements**
 
@@ -116,8 +118,6 @@ The API only offers two GET endpoints: `/measurements` and `/timeseries`.
 
 ## Use examples
 
-The following examples use the instance deployed on heroku:
-
 **(1) Obtain measurements for all stations**
 
 ```
@@ -129,10 +129,10 @@ See the [response on heroku](https://miguel-airquality.herokuapp.com/measurement
 **(2) Obtain timeseries for some stations**
 
 ```
-GET /timeseries?variable=pm10&measurement=min&from=2017-06-01T00:00:00&to=2017-07-01T00:00:00&step=week
+GET /timeseries?variable=pm10&measurement=min&from=2017-06-01T00:00:00&to=2017-07-01T00:00:00&step=week&stations=aq_jaen,aq_salvia
 ```
 
-See the [response on heroku](https://miguel-airquality.herokuapp.com/timeseries?variable=pm10&measurement=min&from=2017-06-01T00:00:00&to=2017-07-01T00:00:00&step=week).
+See the [response on heroku](https://miguel-airquality.herokuapp.com/timeseries?variable=pm10&measurement=min&from=2017-06-01T00:00:00&to=2017-07-01T00:00:00&step=week&stations=aq_jaen,aq_salvia).
 
 **(3) Obtain measurements, filter by both a list of stations, and a geographic perimeter**
 
