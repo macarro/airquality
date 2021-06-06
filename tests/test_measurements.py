@@ -35,6 +35,37 @@ def test_future_date(client):
     assert 'rows' in body
     assert body['total_rows'] == 0
 
+def test_stations_filter_one_station(client):
+    """If a valid stations filter is set with 1 station, only that staion should appear in the result"""
+    params = {
+        'variable': 'so2',
+        'measurement': 'avg',
+        'from': '2017-06-01T00:00:00',
+        'to': '2017-07-01T00:00:00',
+        'stations': 'aq_jaen'
+    }
+    response = client.get('/measurements', query_string=params)
+    body = json.loads(response.data)
+    assert response.status_code == 200
+    assert 'rows' in body and body['rows'][0]['station_id'] == 'aq_jaen'
+    assert 'total_rows' in body and body['total_rows'] == 1
+
+def test_stations_filter_three_stations(client):
+    """If a valid stations filter is set with 3 stations, only those staion should appear in the result"""
+    params = {
+        'variable': 'so2',
+        'measurement': 'avg',
+        'from': '2017-06-01T00:00:00',
+        'to': '2017-07-01T00:00:00',
+        'stations': 'aq_jaen,aq_salvia,aq_nevero'
+    }
+    response = client.get('/measurements', query_string=params)
+    body = json.loads(response.data)
+    assert response.status_code == 200
+    for row in body['rows']:
+        assert row['station_id'] in ['aq_jaen', 'aq_salvia', 'aq_nevero']
+    assert 'total_rows' in body and body['total_rows'] == 3
+
 def test_invalid_variable(client):
     """A request with an invalid variable value should return an error for that parameter"""
     params = {
@@ -134,3 +165,17 @@ def test_missing_to(client):
     body = json.loads(response.data)
     assert response.status_code == 422
     assert 'to' in body['errors']['query']
+
+def test_invalid_station(client):
+    """A request with an invalid station should return an error for that parameter"""
+    params = {
+        'variable': 'so2',
+        'measurement': 'avg',
+        'from': '2017-06-01T00:00:00',
+        'to': '2017-07-01T00:00:00',
+        'stations': 'aq_jaen,aq_salvia,aq_nevero,invalid'
+    }
+    response = client.get('/measurements', query_string=params)
+    body = json.loads(response.data)
+    assert response.status_code == 422
+    assert 'stations' in body['errors']['query']
