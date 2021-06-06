@@ -172,8 +172,6 @@ def timeseries(args):
     )
     return response.json()
 
-
-
 # Return validation errors as JSON
 @app.errorhandler(422)
 @app.errorhandler(400)
