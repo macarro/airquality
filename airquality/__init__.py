@@ -25,6 +25,20 @@ def get_station_ids():
     body = response.json()
     return [row['station_id'] for row in body['rows']]
 
+def validate_geojson(geojson):
+    query=f"""
+    SELECT ST_GeomFromGeoJSON('{geojson}')
+    """
+    response = requests.get(
+        url=sql_api_url,
+        params={
+            'q': query
+        }
+    )
+    body = response.json()
+    if 'error' in body:
+        raise ValidationError(body['error'])
+
 # Measurements endpoint
 @app.route('/measurements', methods=['GET'])
 @use_args(
@@ -43,9 +57,14 @@ def get_station_ids():
         'to': fields.DateTime(
             required=True
         ),
-        'stations': fields.DelimitedList(fields.Str(
-            validate=validate.OneOf(get_station_ids())
-        ))
+        'stations': fields.DelimitedList(
+            fields.Str(
+                validate=validate.OneOf(get_station_ids())
+            )
+        ),
+        'geom': fields.Str(
+            validate=validate_geojson
+        )
     },
     location='query')
 def measurements(args):
@@ -67,10 +86,15 @@ def measurements(args):
         query_stationfilter = f"""
         AND m.station_id IN ({', '.join([f"'{station_id}'" for station_id in args['stations']])})
         """
+    query_geomfilter = ''
+    if 'geom' in args:
+        query_geomfilter = f"""
+        AND ST_Intersects(ST_GeomFromGeoJSON('{args['geom']}'), s.the_geom)
+        """
     query_group = """
     GROUP BY s.station_id, s.the_geom, g.population
     """
-    query = query_base + query_timefilter + query_stationfilter + query_group
+    query = query_base + query_timefilter + query_stationfilter + query_geomfilter + query_group
     response = requests.get(
         url=sql_api_url,
         params={
@@ -101,9 +125,14 @@ def measurements(args):
             required=True,
             validate=validate.OneOf(steps)
         ),
-        'stations': fields.DelimitedList(fields.Str(
-            validate=validate.OneOf(get_station_ids())
-        ))
+        'stations': fields.DelimitedList(
+            fields.Str(
+                validate=validate.OneOf(get_station_ids())
+            )
+        ),
+        'geom': fields.Str(
+            validate=validate_geojson
+        )
     },
     location='query')
 def timeseries(args):
@@ -126,10 +155,15 @@ def timeseries(args):
         query_stationfilter = f"""
         AND m.station_id IN ({', '.join([f"'{station_id}'" for station_id in args['stations']])})
         """
+    query_geomfilter = ''
+    if 'geom' in args:
+        query_geomfilter = f"""
+        AND ST_Intersects(ST_GeomFromGeoJSON('{args['geom']}'), s.the_geom)
+        """
     query_group = f"""
     GROUP BY s.station_id, s.the_geom, g.population, interval_start
     """
-    query = query_base + query_timefilter + query_stationfilter + query_group
+    query = query_base + query_timefilter + query_stationfilter + query_geomfilter + query_group
     response = requests.get(
         url=sql_api_url,
         params={
