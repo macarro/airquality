@@ -183,3 +183,7 @@ I deployed the api on heroku as this platform offers a very quick setup, as well
 **Tests**
 
 I wrote automated tests for both positive and negative use cases. The tests check the responses returned by the api when accessing the endpoints with different parameters. I did not mock out the CARTO api, that means that my tests could be considered end-to-end tests more than unit tests.
+
+**Continuous integration**
+
+I use Travis CI to execute the tests after each push to GitHub. This allows me to see the build status (passed/failed), as well as the test coverage, which is calculated using Coveralls. The configuration of the CI process is located in the file `.travis.yml`.
